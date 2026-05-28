@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FinTech Security ROI Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg:    #070d1a; --bg2:   #0c1425; --card:  #111827; --card2: #162032;
+  --blue:  #3b82f6; --cyan:  #22d3ee; --green: #34d399;
+  --amber: #fbbf24; --red:   #f87171; --purp:  #a78bfa;
+  --txt:   #e2e8f0; --txt2:  #94a3b8; --txt3:  #64748b; --bdr:   #1e293b;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--txt);font-size:13px;line-height:1.5;}
+
+.hdr{background:linear-gradient(135deg,#0f1f3d,#0c1425);border-bottom:1px solid var(--bdr);
+  padding:14px 22px;display:flex;align-items:center;justify-content:space-between;}
+.hdr-l{display:flex;align-items:center;gap:14px;}
+.logo{width:34px;height:34px;background:linear-gradient(135deg,var(--blue),var(--cyan));
+  border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:900;color:#fff;}
+.hdr h1{font-size:15px;font-weight:700;} .hdr p{font-size:10px;color:var(--txt3);}
+.seg-badge{padding:3px 11px;border-radius:20px;font-size:11px;font-weight:600;
+  background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.3);color:var(--blue);}
+.calc-t{font-size:10px;color:var(--txt3);}
+
+.layout{display:grid;grid-template-columns:280px 1fr;min-height:calc(100vh - 62px);}
+.sidebar{background:var(--bg2);border-right:1px solid var(--bdr);padding:18px;overflow-y:auto;}
+.sb-section{margin-bottom:20px;}
+.sb-lbl{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--txt3);margin-bottom:10px;}
+.ig{margin-bottom:11px;}
+.ig label{display:block;font-size:11px;color:var(--txt2);margin-bottom:3px;font-weight:500;}
+.ig input,.ig select{width:100%;background:var(--card);border:1px solid var(--bdr);
+  border-radius:6px;padding:7px 9px;color:var(--txt);font-size:12px;font-family:inherit;outline:none;transition:border-color .2s;}
+.ig input:focus,.ig select:focus{border-color:var(--blue);}
+.ig input[type=range]{-webkit-appearance:none;appearance:none;height:4px;background:var(--card2);
+  border:none;border-radius:2px;padding:0;cursor:pointer;}
+.ig input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;
+  border-radius:50%;background:var(--blue);cursor:pointer;}
+.iu{font-size:10px;color:var(--txt3);margin-top:2px;}
+select option{background:#1a2a3a;}
+
+.pills{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+.pill{padding:8px 6px;border-radius:6px;border:1px solid var(--bdr);background:var(--card);
+  cursor:pointer;text-align:center;font-size:11px;font-weight:600;color:var(--txt2);transition:all .2s;line-height:1.3;}
+.pill:hover{border-color:var(--blue);color:var(--txt);}
+.pill.active{border-color:var(--blue);background:rgba(59,130,246,.12);color:var(--blue);}
+.pill-ico{font-size:14px;display:block;margin-bottom:2px;}
+.note{background:var(--card2);border-radius:8px;padding:11px;font-size:10px;color:var(--txt3);line-height:1.6;}
+.note strong{color:var(--txt2);}
+
+.main{padding:18px;overflow-y:auto;}
+.mgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+.mc{background:var(--card);border:1px solid var(--bdr);border-radius:10px;padding:15px;position:relative;overflow:hidden;}
+.mc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.mc.danger::before{background:var(--red);} .mc.warn::before{background:var(--amber);}
+.mc.info::before{background:var(--purp);} .mc.ok::before{background:var(--green);}
+.mc-ico{font-size:18px;margin-bottom:7px;}
+.mc-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--txt3);margin-bottom:3px;}
+.mc-val{font-size:21px;font-weight:800;line-height:1;margin-bottom:3px;}
+.mc-sub{font-size:10px;color:var(--txt3);}
+.mc-sub2{font-size:9px;color:var(--txt3);margin-top:2px;}
+.mc-badge{position:absolute;top:11px;right:11px;padding:2px 7px;border-radius:10px;font-size:9px;font-weight:700;}
+.b-red{background:rgba(248,113,113,.15);color:var(--red);}
+.b-amb{background:rgba(251,191,36,.15);color:var(--amber);}
+.b-grn{background:rgba(52,211,153,.15);color:var(--green);}
+.b-blu{background:rgba(59,130,246,.15);color:var(--blue);}
+
+.crow{display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-bottom:14px;}
+.card{background:var(--card);border:1px solid var(--bdr);border-radius:10px;padding:15px;}
+.ct{font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.08em;
+  margin-bottom:13px;display:flex;align-items:center;justify-content:space-between;}
+.ct span{font-size:10px;color:var(--txt3);font-weight:400;text-transform:none;letter-spacing:0;}
+.cw{position:relative;}
+
+.roi-item{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+.roi-lbl{font-size:11px;color:var(--txt2);min-width:175px;}
+.roi-track{flex:1;height:7px;background:var(--bg2);border-radius:4px;overflow:hidden;}
+.roi-fill{height:100%;border-radius:4px;transition:width .45s ease;}
+.roi-v{font-size:11px;font-weight:700;min-width:72px;text-align:right;}
+
+.ctrl-section{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.ctrl-row{display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(30,41,59,.6);}
+.ctrl-row:last-child{border-bottom:none;}
+.ctrl-chk{width:13px;height:13px;cursor:pointer;accent-color:var(--blue);flex-shrink:0;}
+.ctrl-n{font-size:11px;color:var(--txt2);flex:1;min-width:0;transition:color .2s;}
+.ctrl-n.active{color:var(--txt);}
+.ctrl-bw{flex:1;height:5px;background:var(--bg2);border-radius:3px;overflow:hidden;}
+.ctrl-bf{height:100%;border-radius:3px;transition:opacity .2s;}
+.ctrl-pct{font-size:11px;font-weight:700;min-width:34px;text-align:right;}
+.tier{font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;min-width:52px;text-align:center;}
+.t-must{background:rgba(248,113,113,.2);color:var(--red);}
+.t-high{background:rgba(251,191,36,.2);color:var(--amber);}
+.t-med{background:rgba(59,130,246,.2);color:var(--blue);}
+.t-low{background:rgba(100,116,139,.2);color:var(--txt3);}
+.ctrl-num{font-size:10px;color:var(--txt3);min-width:14px;}
+
+.kgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.kc{background:var(--card);border:1px solid var(--bdr);border-radius:10px;overflow:hidden;}
+.kh{padding:9px 13px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;display:flex;align-items:center;gap:5px;}
+.kh.det{background:rgba(59,130,246,.15);color:var(--blue);border-bottom:1px solid rgba(59,130,246,.2);}
+.kh.fri{background:rgba(251,191,36,.12);color:var(--amber);border-bottom:1px solid rgba(251,191,36,.2);}
+.kh.fin{background:rgba(248,113,113,.12);color:var(--red);border-bottom:1px solid rgba(248,113,113,.2);}
+.kh.hlt{background:rgba(52,211,153,.12);color:var(--green);border-bottom:1px solid rgba(52,211,153,.2);}
+.ki-wrap{padding:7px;}
+.ki{padding:5px;border-radius:5px;margin-bottom:1px;}
+.ki:hover{background:var(--bg2);}
+.ki-n{font-size:11px;color:var(--txt2);font-weight:500;display:flex;align-items:center;gap:4px;}
+.ki-row{display:flex;justify-content:space-between;align-items:center;margin-top:1px;}
+.ki-t{font-size:11px;font-weight:700;color:var(--txt);}
+.ki-d{font-size:10px;color:var(--txt3);}
+.dot{width:6px;height:6px;border-radius:50%;display:inline-block;flex-shrink:0;}
+.s-g{background:var(--green);} .s-a{background:var(--amber);} .s-r{background:var(--red);}
+
+.dl{display:flex;align-items:center;gap:5px;margin-bottom:4px;}
+.dl-sq{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+.ftr{background:var(--bg2);border-top:1px solid var(--bdr);padding:9px 22px;font-size:10px;color:var(--txt3);text-align:center;}
+.reg-break{font-size:9px;color:var(--txt3);margin-top:3px;}
+
+.ctrl-legend{display:flex;gap:12px;margin-bottom:10px;font-size:10px;color:var(--txt3);}
+.ctrl-legend span{display:flex;align-items:center;gap:4px;}
+.leg-sq{width:8px;height:8px;border-radius:2px;display:inline-block;}
+
+@media(max-width:1200px){.mgrid{grid-template-columns:repeat(2,1fr);}.kgrid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:900px){.layout{grid-template-columns:1fr;}.sidebar{border-right:none;border-bottom:1px solid var(--bdr);}.crow,.ctrl-section{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-l">
+    <div class="logo">F</div>
+    <div><h1>FinTech Security ROI Dashboard</h1><p>Fraud exposure · Regulatory risk · Security investment analysis</p></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div class="seg-badge" id="segBadge">Payments / PSP</div>
+    <div class="calc-t" id="calcTime">—</div>
+  </div>
+</div>
+
+<div class="layout">
+<div class="sidebar">
+  <div class="sb-section">
+    <div class="sb-lbl">Business Segment</div>
+    <div class="pills">
+      <div class="pill active" data-seg="payments" onclick="selectSeg(this)"><span class="pill-ico">💳</span>Payments/PSP</div>
+      <div class="pill" data-seg="lending"  onclick="selectSeg(this)"><span class="pill-ico">🏦</span>Lending/BNPL</div>
+      <div class="pill" data-seg="neobank"  onclick="selectSeg(this)"><span class="pill-ico">📱</span>Neobank</div>
+      <div class="pill" data-seg="crypto"   onclick="selectSeg(this)"><span class="pill-ico">₿</span>Crypto</div>
+    </div>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-lbl">Financial Parameters</div>
+    <div class="ig">
+      <label>Total Payment Volume (TPV)</label>
+      <input type="number" id="tpv" value="5" min="0.1" max="500" step="0.5" oninput="recalc()">
+      <div class="iu">€ Billions per year</div>
+    </div>
+    <div class="ig">
+      <label>Annual Security Spend</label>
+      <input type="number" id="secSpend" value="15" min="0.5" max="500" step="0.5" oninput="recalc()">
+      <div class="iu">€ Millions per year</div>
+    </div>
+    <div class="ig">
+      <label>Total Headcount</label>
+      <input type="number" id="headcount" value="500" min="10" max="50000" step="50" oninput="recalc()">
+      <div class="iu">Full-time employees</div>
+    </div>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-lbl">Regulatory Exposure</div>
+    <div class="ig">
+      <label>EU Transaction Share&nbsp;<strong id="euPctLbl" style="color:var(--cyan);">65%</strong></label>
+      <input type="range" id="euPct" value="65" min="0" max="100" step="5"
+             oninput="euPctLbl.textContent=this.value+'%';recalc()">
+      <div class="iu">GDPR · PSD2 · DORA exposure</div>
+    </div>
+    <div class="ig">
+      <label>UK Transaction Share&nbsp;<strong id="ukPctLbl" style="color:var(--cyan);">15%</strong></label>
+      <input type="range" id="ukPct" value="15" min="0" max="100" step="5"
+             oninput="ukPctLbl.textContent=this.value+'%';recalc()">
+      <div class="iu">PSR APP reimbursement exposure</div>
+    </div>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-lbl">Security Posture</div>
+    <div class="ig">
+      <label>Control Coverage&nbsp;<strong id="covLbl" style="color:var(--cyan);">75%</strong></label>
+      <input type="range" id="coverage" value="75" min="10" max="100" step="5"
+             oninput="covLbl.textContent=this.value+'%';recalc()">
+      <div class="iu">% of mandated controls active</div>
+    </div>
+    <div class="ig">
+      <label>Model Currency&nbsp;<strong id="modLbl" style="color:var(--cyan);">21 days</strong></label>
+      <input type="range" id="modelAge" value="21" min="1" max="120" step="1"
+             oninput="modLbl.textContent=this.value+' days';recalc()">
+      <div class="iu">Days since last model retrain</div>
+    </div>
+    <div class="ig">
+      <label>False Decline Rate&nbsp;<strong id="fdRateLbl" style="color:var(--amber);">0.5%</strong></label>
+      <input type="range" id="fdRate" value="5" min="0" max="50" step="1"
+             oninput="fdRateLbl.textContent=(this.value/10).toFixed(1)+'%';recalc()">
+      <div class="iu">Legitimate txns blocked · reduces ROI</div>
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>Methodology</strong><br>
+    Fraud rates: Nilson 2024. Breach: IBM X-Force 2024 (€195/record). GDPR/PSD2 fines use statutory maxima with 5–15% enforcement probability. DORA: 1% daily turnover/day, capped €10M. PSR: mandatory 50/50 APP reimbursement (UK, Oct 2024). All figures indicative.
+  </div>
+</div>
+
+<div class="main">
+  <div class="mgrid">
+    <div class="mc danger">
+      <div class="mc-ico">🎯</div>
+      <div class="mc-lbl">Gross Fraud Exposure</div>
+      <div class="mc-val" id="mFraud">—</div>
+      <div class="mc-sub" id="mFraudSub">— bps of TPV</div>
+      <div class="mc-badge b-red">HIGH</div>
+    </div>
+    <div class="mc warn">
+      <div class="mc-ico">⚖️</div>
+      <div class="mc-lbl">Regulatory Tail Risk</div>
+      <div class="mc-val" id="mReg">—</div>
+      <div class="mc-sub" id="mRegSub">—</div>
+      <div class="mc-sub2" id="mRegBreak">—</div>
+      <div class="mc-badge b-amb" id="mRegBadge">MEDIUM</div>
+    </div>
+    <div class="mc info">
+      <div class="mc-ico">💥</div>
+      <div class="mc-lbl">Breach Cost Estimate</div>
+      <div class="mc-val" id="mBreach">—</div>
+      <div class="mc-sub" id="mBreachSub">— records at risk</div>
+      <div class="mc-badge b-blu">TAIL</div>
+    </div>
+    <div class="mc ok">
+      <div class="mc-ico">📈</div>
+      <div class="mc-lbl">Security ROI</div>
+      <div class="mc-val" id="mROI">—</div>
+      <div class="mc-sub" id="mROISub">—</div>
+      <div class="mc-badge b-grn" id="mROIBadge">POSITIVE</div>
+    </div>
+  </div>
+
+  <div class="crow">
+    <div class="card">
+      <div class="ct">Security ROI Breakdown <span>Risk protected vs. total cost of security</span></div>
+      <div class="cw" style="height:150px;"><canvas id="roiChart"></canvas></div>
+      <div id="roiBreakdown" style="margin-top:10px;"></div>
+    </div>
+    <div class="card">
+      <div class="ct">Risk Composition <span>Expected annual loss by category</span></div>
+      <div class="cw" style="height:150px;"><canvas id="donutChart"></canvas></div>
+      <div id="donutLegend" style="margin-top:8px;"></div>
+    </div>
+  </div>
+
+  <div class="ctrl-section">
+    <div class="card">
+      <div class="ct">Fraud Control Effectiveness
+        <span id="ctrlChartInfo">toggle controls to see ROI impact</span>
+      </div>
+      <div class="ctrl-legend">
+        <span><span class="leg-sq" style="background:rgba(59,130,246,.75);"></span>Must-Have (active)</span>
+        <span><span class="leg-sq" style="background:rgba(251,191,36,.75);"></span>High (active)</span>
+        <span><span class="leg-sq" style="background:rgba(100,116,139,.25);"></span>Inactive</span>
+      </div>
+      <div class="cw" style="height:280px;"><canvas id="ctrlChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="ct">Control Prioritization Matrix
+        <span id="ctrlTableInfo">— controls active</span>
+      </div>
+      <div id="ctrlTable"></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px;">
+    <div class="ct">Fraud KPI Reference Framework <span>Benchmarks reflect current posture inputs</span></div>
+    <div class="kgrid" id="kpiGrid"></div>
+  </div>
+</div>
+</div>
+
+<div class="ftr">
+  FinTech Security ROI Dashboard &nbsp;·&nbsp;
+  Nilson 2024 · IBM X-Force 2024 · ECB PSSR · EBA ICT Risk · ENISA 2024 · PSR APP Reimbursement (Oct 2024) · DORA (Jan 2025)
+  &nbsp;·&nbsp; For internal planning use only
+</div>
+
+<script>
+// ── Segment config ─────────────────────────────────────────────────────────
+const SEG = {
+  payments:{ name:'Payments / PSP',  bps:6,  regMult:1.2, breachMult:1.5, psd2:true,  psrApplicable:true,  color:'#3b82f6', margin:0.008 },
+  lending: { name:'Lending / BNPL', bps:15, regMult:1.6, breachMult:1.8, psd2:false, psrApplicable:false, color:'#a78bfa', margin:0.025 },
+  neobank: { name:'Neobank',         bps:10, regMult:1.8, breachMult:2.0, psd2:true,  psrApplicable:true,  color:'#22d3ee', margin:0.015 },
+  crypto:  { name:'Crypto Exchange', bps:20, regMult:2.2, breachMult:1.6, psd2:false, psrApplicable:false, color:'#fbbf24', margin:0.006 },
+};
+
+// ── Segment-specific control lists ─────────────────────────────────────────
+// pct = marginal fraud reduction when added multiplicatively to other controls
+const CTRLS_ALL = {
+  payments:[
+    { name:'ML/AI Transaction Scoring',        pct:30, tier:'Must-Have', checked:true  },
+    { name:'3DS2 / Strong Customer Auth',      pct:25, tier:'Must-Have', checked:true  },
+    { name:'Device Fingerprinting',            pct:20, tier:'Must-Have', checked:true  },
+    { name:'APP Fraud Detection',              pct:25, tier:'High',      checked:false },
+    { name:'Graph / Network Analytics',        pct:22, tier:'High',      checked:false },
+    { name:'Behavioral Biometrics',            pct:18, tier:'High',      checked:false },
+    { name:'Phone / SIM-Swap Detection',       pct:20, tier:'High',      checked:false },
+    { name:'Velocity & Threshold Rules',       pct:15, tier:'Must-Have', checked:true  },
+    { name:'Sanctions / PEP Screening',        pct:18, tier:'Must-Have', checked:true  },
+    { name:'Chargeback Prevention (Ethoca)',   pct:14, tier:'High',      checked:false },
+    { name:'Address Verification (AVS)',       pct:12, tier:'High',      checked:false },
+    { name:'IP Geolocation & Proxy Detection', pct:10, tier:'Medium',    checked:false },
+    { name:'Email Intelligence',               pct: 8, tier:'Medium',    checked:false },
+  ],
+  lending:[
+    { name:'Synthetic Identity Detection',     pct:28, tier:'Must-Have', checked:true  },
+    { name:'Document & Identity Verification', pct:25, tier:'Must-Have', checked:true  },
+    { name:'ML/AI Credit Fraud Scoring',       pct:28, tier:'Must-Have', checked:false },
+    { name:'Open Banking / Income Verify',     pct:25, tier:'High',      checked:false },
+    { name:'Credit Bureau Fraud Score',        pct:20, tier:'Must-Have', checked:true  },
+    { name:'Graph / Network Analytics',        pct:22, tier:'High',      checked:false },
+    { name:'Behavioral Biometrics',            pct:18, tier:'High',      checked:false },
+    { name:'Phone / SIM-Swap Detection',       pct:20, tier:'High',      checked:false },
+    { name:'Velocity & Threshold Rules',       pct:15, tier:'Must-Have', checked:true  },
+    { name:'Sanctions / PEP Screening',        pct:18, tier:'Must-Have', checked:true  },
+    { name:'Employment Verification',          pct:12, tier:'High',      checked:false },
+    { name:'Email Intelligence',               pct: 8, tier:'Medium',    checked:false },
+  ],
+  neobank:[
+    { name:'ML/AI Transaction Scoring',        pct:30, tier:'Must-Have', checked:true  },
+    { name:'APP Fraud Detection',              pct:28, tier:'Must-Have', checked:false },
+    { name:'Liveness Check / Deepfake Detect', pct:25, tier:'Must-Have', checked:false },
+    { name:'Device Fingerprinting',            pct:20, tier:'Must-Have', checked:true  },
+    { name:'Phone / SIM-Swap Detection',       pct:25, tier:'Must-Have', checked:true  },
+    { name:'Mule Account Detection',           pct:22, tier:'High',      checked:false },
+    { name:'Behavioral Biometrics',            pct:18, tier:'High',      checked:false },
+    { name:'Graph / Network Analytics',        pct:22, tier:'High',      checked:false },
+    { name:'Velocity & Threshold Rules',       pct:15, tier:'Must-Have', checked:true  },
+    { name:'Sanctions / PEP Screening',        pct:18, tier:'Must-Have', checked:true  },
+    { name:'DORA ICT Resilience Controls',     pct:10, tier:'Must-Have', checked:false },
+    { name:'IP Geolocation & Proxy Detection', pct:10, tier:'Medium',    checked:false },
+  ],
+  crypto:[
+    { name:'On-Chain Analytics (AML/CFT)',     pct:35, tier:'Must-Have', checked:true  },
+    { name:'KYC / Enhanced Due Diligence',     pct:28, tier:'Must-Have', checked:true  },
+    { name:'Sanctions Screening (real-time)',  pct:25, tier:'Must-Have', checked:true  },
+    { name:'FATF Travel Rule Compliance',      pct:25, tier:'Must-Have', checked:false },
+    { name:'Cold Wallet / HSM Key Mgmt',       pct:28, tier:'Must-Have', checked:false },
+    { name:'Wash Trading Detection',           pct:22, tier:'High',      checked:false },
+    { name:'Smart Contract Audit',             pct:20, tier:'High',      checked:false },
+    { name:'Graph / Network Analytics',        pct:22, tier:'High',      checked:false },
+    { name:'ML/AI Transaction Scoring',        pct:20, tier:'High',      checked:false },
+    { name:'Address Whitelisting',             pct:15, tier:'Medium',    checked:false },
+    { name:'Device Fingerprinting',            pct:15, tier:'High',      checked:false },
+    { name:'IP Geolocation & Proxy Detection', pct:10, tier:'Medium',    checked:false },
+  ],
+};
+
+// ── KPI layers with dynamic keys ───────────────────────────────────────────
+const KPI = [
+  { label:'Detection Layer', ico:'🔍', cls:'det', items:[
+    { n:'Fraud Detection Rate (FDR)',  t:'> 85 %',   d:'True positives / total fraud',    k:'fdr'      },
+    { n:'False Positive Rate (FPR)',   t:'< 5 %',    d:'Good txns flagged as fraud',       k:'fpr'      },
+    { n:'Model Precision',             t:'> 80 %',   d:'Precision on fraud alerts',        k:'precision'},
+    { n:'Model Recall',                t:'> 85 %',   d:'Sensitivity to fraud events',      k:'recall'   },
+    { n:'Alert-to-Case Ratio',         t:'< 3 : 1',  d:'Signal noise in alert pipeline',   k:'a2c'      },
+    { n:'Time-to-Detect (P50)',        t:'< 200 ms', d:'Median real-time decision latency', k:'ttd'     },
+  ]},
+  { label:'Friction Layer', ico:'🔒', cls:'fri', items:[
+    { n:'Step-Up Auth Rate',           t:'< 8 %',    d:'% txns requiring challenge',       k:'stepup'   },
+    { n:'False Decline Rate',          t:'< 1 %',    d:'Legitimate txns blocked',          k:'fdecline' },
+    { n:'Auth Abandonment Rate',       t:'< 2 %',    d:'Drop-off at challenge screen',     k:'abandon'  },
+    { n:'Challenge Completion Rate',   t:'> 85 %',   d:'Users completing step-up',         k:'complete' },
+    { n:'Auth Latency P95',            t:'< 500 ms', d:'95th percentile auth time',        k:'latency'  },
+    { n:'Friction NPS Delta',          t:'< −5 pts', d:'NPS impact for challenged users',  k:'nps'      },
+  ]},
+  { label:'Financial Layer', ico:'💰', cls:'fin', items:[
+    { n:'Fraud Loss Rate',             t:'< 8 bps',  d:'Net fraud losses / TPV',           k:'lossbps'  },
+    { n:'Chargeback Rate',             t:'< 0.5 %',  d:'CB count / total transactions',    k:'cbrate'   },
+    { n:'Cost per Fraud Case',         t:'< €250',   d:'OpEx per investigated case',       k:'casecost' },
+    { n:'Recovery Rate',               t:'> 60 %',   d:'Recovered / total fraud loss',     k:'recovery' },
+    { n:'Fraud OpEx Ratio',            t:'< 15 %',   d:'Fraud ops cost / fraud losses',    k:'opex'     },
+    { n:'Regulatory Penalty Cost',     t:'€0 YTD',   d:'Fines and penalties year-to-date', k:'penalties'},
+  ]},
+  { label:'Control Health', ico:'🏥', cls:'hlt', items:[
+    { n:'Control Coverage',            t:'> 95 %',   d:'Active vs mandated controls',      k:'coverage' },
+    { n:'Model Staleness',             t:'< 30 days',d:'Days since last model retrain',    k:'staleness'},
+    { n:'Rule Effectiveness Score',    t:'> 75 %',   d:'Rules exceeding hit-rate floor',   k:'ruleeff'  },
+    { n:'SLA Compliance',              t:'> 99 %',   d:'Cases resolved within SLA',        k:'sla'      },
+    { n:'Data Quality Score',          t:'> 98 %',   d:'Feature completeness for models',  k:'dataq'    },
+    { n:'Audit Pass Rate',             t:'100 %',    d:'Last full audit cycle result',      k:'audit'    },
+  ]},
+];
+
+// ── State ─────────────────────────────────────────────────────────────────
+let activeSeg = 'payments';
+let activeCtrls = [];
+let roiC = null, donutC = null, ctrlC = null;
+
+// ── Formatters ────────────────────────────────────────────────────────────
+const fe = v => v>=1e9?'€'+(v/1e9).toFixed(2)+'B':v>=1e6?'€'+(v/1e6).toFixed(1)+'M':v>=1e3?'€'+(v/1e3).toFixed(0)+'K':'€'+v.toFixed(0);
+const fp = v => (v>=0?'+':'')+v.toFixed(0)+'%';
+
+// ── Init controls for segment ─────────────────────────────────────────────
+function initControls(seg) {
+  activeCtrls = CTRLS_ALL[seg].map(c => ({...c})).sort((a,b) => b.pct - a.pct);
+}
+
+// ── Toggle a control and recalc ───────────────────────────────────────────
+function toggleCtrl(name) {
+  const c = activeCtrls.find(x => x.name === name);
+  if (c) { c.checked = !c.checked; recalc(); }
+}
+
+// ── Core calculation ──────────────────────────────────────────────────────
+function calc() {
+  const tpv    = (parseFloat(document.getElementById('tpv').value)||5) * 1e9;
+  const spend  = (parseFloat(document.getElementById('secSpend').value)||15) * 1e6;
+  const hc     = parseInt(document.getElementById('headcount').value)||500;
+  const euPct  = parseFloat(document.getElementById('euPct').value)/100;
+  const ukPct  = parseFloat(document.getElementById('ukPct').value)/100;
+  const cov    = parseFloat(document.getElementById('coverage').value)/100;
+  const mAge   = parseInt(document.getElementById('modelAge').value)||21;
+  const fdRate = (parseInt(document.getElementById('fdRate').value)||5) / 10; // slider 0-50 → 0.0-5.0%
+  const s      = SEG[activeSeg];
+
+  // ── Fraud ── multiplicative control model ──────────────────────────────
+  const modelDecay    = Math.min(0.25, Math.max(0,(mAge-14)*0.003));
+  const effCov        = cov * (1 - modelDecay);
+  let residual        = 1.0;
+  const checked       = activeCtrls.filter(c => c.checked);
+  for (const c of checked) residual *= (1 - c.pct/100);
+  const ctrlReduction = Math.min(0.78, 1 - residual);
+  const grossFraud    = tpv * (s.bps/10000);
+  const fraudSaved    = grossFraud * ctrlReduction * effCov;
+  const netFraud      = grossFraud - fraudSaved;
+
+  // ── False decline cost ─────────────────────────────────────────────────
+  const falseDeclineCost = tpv * (fdRate/100) * s.margin;
+
+  // ── Regulatory ─────────────────────────────────────────────────────────
+  // GDPR
+  const gdprMax  = Math.max(20e6, 0.04 * tpv);
+  const gdprProb = 0.05 * (1 - cov*0.6) * Math.max(euPct, 0.01);
+  const gdprRisk = gdprMax * gdprProb;
+
+  // PSD2 / sector-specific
+  const psd2Pot  = s.psd2 ? tpv * euPct * 0.02 : tpv * euPct * 0.01;
+  const psd2Prob = 0.10 * (1 - cov*0.5) * euPct;
+  const psd2Risk = psd2Pot * psd2Prob;
+
+  // DORA – applies to ALL segments from Jan 2025
+  const doraDaily = Math.min(10e6, tpv / 365 * 0.01);
+  const doraProb  = 0.12 * (1 - cov * 0.70) * (euPct > 0 ? 1 : 0.4); // lower if no EU presence
+  const doraRisk  = doraDaily * 5 * doraProb;
+
+  // PSR APP Reimbursement – payments + neobank with UK volume (Oct 2024)
+  const appRate      = activeSeg === 'neobank' ? 0.0004 : 0.0003; // 4 bps neobank, 3 bps PSP
+  const psrLiability = s.psrApplicable ? tpv * ukPct * appRate * 0.5 : 0;
+
+  const regTail = (gdprRisk + psd2Risk + doraRisk + psrLiability) * s.regMult;
+
+  // ── Breach ─────────────────────────────────────────────────────────────
+  const records   = hc * 300;
+  const rawBreach = (4.88e6 + records * 195) * s.breachMult;
+  const bProb     = 0.15 * (1 - cov * 0.5);
+  const expBreach = rawBreach * bProb;
+
+  // ── ROI ────────────────────────────────────────────────────────────────
+  const fp_fraud  = fraudSaved;
+  const fp_reg    = regTail   * cov * 0.7;
+  const fp_breach = expBreach * cov * 0.6;
+  const totalProt = fp_fraud + fp_reg + fp_breach;
+  const totalCost = spend + falseDeclineCost;
+  const roi       = (totalProt - totalCost) / totalCost * 100;
+  const retPerEur = totalProt / totalCost;
+
+  return {
+    tpv, spend, grossFraud, netFraud, fraudSaved, bps:s.bps,
+    ctrlReduction, checkedCount:checked.length,
+    falseDeclineCost, fdRate,
+    gdprRisk, psd2Risk, doraRisk, psrLiability, regTail,
+    rawBreach, expBreach, records,
+    fp_fraud, fp_reg, fp_breach, totalProt,
+    totalCost, roi, retPerEur,
+    cov, mAge,
+  };
+}
+
+// ── Dynamic KPI statuses ──────────────────────────────────────────────────
+function computeStatuses(r) {
+  const {cov, mAge, fdRate} = r;
+  const netBps = r.netFraud / r.tpv * 10000;
+  const g='s-g', a='s-a', rr='s-r';
+  return {
+    fdr:       cov>=0.85?g: cov>=0.70?a:rr,
+    fpr:       fdRate<=0.5?g: fdRate<=1.5?a:rr,
+    precision: cov>=0.80?g: cov>=0.65?a:rr,
+    recall:    cov>=0.85?g: cov>=0.70?a:rr,
+    a2c:       cov>=0.75?g: cov>=0.60?a:rr,
+    ttd:       mAge<=14?g:  mAge<=30?a:rr,
+    stepup:    fdRate<=0.5?g: fdRate<=1.5?a:rr,
+    fdecline:  fdRate<=0.5?g: fdRate<=1.0?a:rr,
+    abandon:   fdRate<=1.0?g: fdRate<=2.5?a:rr,
+    complete:  cov>=0.75?g: cov>=0.60?a:rr,
+    latency:   mAge<=14?g:  mAge<=45?a:rr,
+    nps:       fdRate<=0.5?g: fdRate<=1.5?a:rr,
+    lossbps:   netBps<4?g:  netBps<10?a:rr,
+    cbrate:    cov>=0.75?g: cov>=0.55?a:rr,
+    casecost:  cov>=0.75?g: cov>=0.60?a:rr,
+    recovery:  cov>=0.70?g: cov>=0.55?a:rr,
+    opex:      cov>=0.70?g: cov>=0.55?a:rr,
+    penalties: r.regTail<5e5?g: r.regTail<2e6?a:rr,
+    coverage:  cov>=0.95?g: cov>=0.75?a:rr,
+    staleness: mAge<=14?g:  mAge<=30?a:rr,
+    ruleeff:   cov>=0.80?g: cov>=0.65?a:rr,
+    sla:       cov>=0.85?g: cov>=0.70?a:rr,
+    dataq:     cov>=0.80?g: cov>=0.65?a:rr,
+    audit:     cov>=0.90?g: cov>=0.75?a:rr,
+  };
+}
+
+// ── Render metrics ────────────────────────────────────────────────────────
+function renderMetrics(r) {
+  document.getElementById('mFraud').textContent    = fe(r.grossFraud);
+  document.getElementById('mFraudSub').textContent = r.bps+' bps of TPV · net '+fe(r.netFraud);
+
+  document.getElementById('mReg').textContent  = fe(r.regTail);
+  document.getElementById('mRegSub').textContent = 'GDPR '+fe(r.gdprRisk)+' · PSD2 '+fe(r.psd2Risk)+' · DORA '+fe(r.doraRisk);
+  document.getElementById('mRegBreak').textContent = r.psrLiability>0 ? 'PSR APP reimbursement '+fe(r.psrLiability) : 'No PSR APP exposure for this segment';
+  const rb = r.regTail>5e6?'b-red':r.regTail>1e6?'b-amb':'b-grn';
+  document.getElementById('mRegBadge').className   = 'mc-badge '+rb;
+  document.getElementById('mRegBadge').textContent = r.regTail>5e6?'HIGH':r.regTail>1e6?'MEDIUM':'LOW';
+
+  document.getElementById('mBreach').textContent    = fe(r.rawBreach);
+  document.getElementById('mBreachSub').textContent = Math.round(r.records/1000)+'K records at risk';
+
+  document.getElementById('mROI').textContent   = fp(r.roi);
+  document.getElementById('mROISub').textContent = '€'+r.retPerEur.toFixed(2)+' protected per €1 total cost';
+  const rb2 = r.roi>=100?'b-grn':r.roi>=0?'b-grn':'b-red';
+  document.getElementById('mROIBadge').className   = 'mc-badge '+rb2;
+  document.getElementById('mROIBadge').textContent = r.roi>=100?'EXCELLENT':r.roi>=0?'POSITIVE':'NEGATIVE';
+}
+
+// ── Render ROI breakdown bars ─────────────────────────────────────────────
+function renderRoiBreakdown(r) {
+  const mx = Math.max(r.totalProt, r.totalCost) * 1.05;
+  const rows = [
+    { l:'Security Spend (Cost)',       v:r.spend,           c:'#f87171' },
+    { l:'False Decline Cost',          v:r.falseDeclineCost, c:'#fb923c' },
+    { l:'Fraud Prevention Value',      v:r.fp_fraud,        c:'#3b82f6' },
+    { l:'Regulatory Risk Reduction',   v:r.fp_reg,          c:'#fbbf24' },
+    { l:'Breach Cost Avoidance',       v:r.fp_breach,       c:'#a78bfa' },
+    { l:'Total Risk Value Protected',  v:r.totalProt,       c:'#34d399' },
+  ];
+  document.getElementById('roiBreakdown').innerHTML = rows.map(i => {
+    const isCost  = i.l.includes('Cost') || i.l.includes('Spend');
+    const isTotal = i.l.includes('Total');
+    return `<div class="roi-item">
+      <div class="roi-lbl" style="color:${isCost?i.c:isTotal?'#34d399':'var(--txt2)'};">${i.l}</div>
+      <div class="roi-track"><div class="roi-fill" style="width:${(i.v/mx*100).toFixed(1)}%;background:${i.c};"></div></div>
+      <div class="roi-v" style="color:${i.c};">${fe(i.v)}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Render charts ─────────────────────────────────────────────────────────
+function renderCharts(r) {
+  // Bar chart
+  const rc = document.getElementById('roiChart').getContext('2d');
+  if(roiC) roiC.destroy();
+  roiC = new Chart(rc, {
+    type:'bar',
+    data:{
+      labels:['Sec. Spend','False Decline','Fraud Prevented','Reg. Reduced','Breach Avoided','Total Protected'],
+      datasets:[{
+        data:[r.spend, r.falseDeclineCost, r.fp_fraud, r.fp_reg, r.fp_breach, r.totalProt],
+        backgroundColor:['rgba(248,113,113,.65)','rgba(251,146,60,.65)','rgba(59,130,246,.65)','rgba(251,191,36,.65)','rgba(167,139,250,.65)','rgba(52,211,153,.65)'],
+        borderColor:['#f87171','#fb923c','#3b82f6','#fbbf24','#a78bfa','#34d399'],
+        borderWidth:1,borderRadius:4,
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+fe(c.raw)}}},
+      scales:{
+        x:{grid:{color:'rgba(30,41,59,.8)'},ticks:{color:'#94a3b8',font:{size:10}}},
+        y:{grid:{color:'rgba(30,41,59,.8)'},ticks:{color:'#94a3b8',font:{size:10},callback:v=>fe(v)}},
+      }
+    }
+  });
+
+  // Donut
+  const dc = document.getElementById('donutChart').getContext('2d');
+  if(donutC) donutC.destroy();
+  const dv  = [r.grossFraud, r.regTail, r.expBreach];
+  const dl  = ['Fraud Loss','Regulatory Risk','Breach Expected'];
+  const dco = ['#f87171','#fbbf24','#a78bfa'];
+  donutC = new Chart(dc, {
+    type:'doughnut',
+    data:{labels:dl,datasets:[{data:dv,backgroundColor:dco.map(c=>c+'bb'),borderColor:dco,borderWidth:1}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'62%',
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+fe(c.raw)+
+        ' ('+( c.raw/dv.reduce((a,b)=>a+b,0)*100).toFixed(0)+'%)'}}}}
+  });
+  const tot = dv.reduce((a,b)=>a+b,0);
+  document.getElementById('donutLegend').innerHTML = dl.map((l,i)=>`
+    <div class="dl">
+      <div class="dl-sq" style="background:${dco[i]};"></div>
+      <span style="font-size:10px;color:var(--txt2);">${l}</span>
+      <span style="font-size:10px;font-weight:700;color:var(--txt);margin-left:auto;">${fe(dv[i])}</span>
+      <span style="font-size:10px;color:var(--txt3);margin-left:4px;">${(dv[i]/tot*100).toFixed(0)}%</span>
+    </div>`).join('');
+}
+
+// ── Render controls (segment-aware, interactive) ──────────────────────────
+function renderControls(r) {
+  const checkedCount   = r.checkedCount;
+  const ctrlReduction  = r.ctrlReduction;
+  document.getElementById('ctrlChartInfo').textContent =
+    `${checkedCount}/${activeCtrls.length} active · ${(ctrlReduction*100).toFixed(0)}% gross fraud reduction`;
+  document.getElementById('ctrlTableInfo').textContent =
+    `${checkedCount} / ${activeCtrls.length} controls active`;
+
+  // Chart: full opacity for checked, faded for unchecked
+  const tc = document.getElementById('ctrlChart').getContext('2d');
+  if(ctrlC) ctrlC.destroy();
+  ctrlC = new Chart(tc, {
+    type:'bar',
+    data:{
+      labels: activeCtrls.map(c => c.name),
+      datasets:[{
+        label:'Fraud Reduction %',
+        data: activeCtrls.map(c => c.pct),
+        backgroundColor: activeCtrls.map(c => {
+          if (!c.checked) return 'rgba(100,116,139,.18)';
+          return c.tier==='Must-Have'?'rgba(59,130,246,.75)':c.tier==='High'?'rgba(251,191,36,.75)':'rgba(100,116,139,.65)';
+        }),
+        borderColor: activeCtrls.map(c => {
+          if (!c.checked) return '#334155';
+          return c.tier==='Must-Have'?'#3b82f6':c.tier==='High'?'#fbbf24':'#64748b';
+        }),
+        borderWidth:1,borderRadius:3,
+      }]
+    },
+    options:{
+      indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{
+        label:c => ` ${c.raw}% marginal reduction`,
+        afterLabel:c => ` ${activeCtrls[c.dataIndex].checked?'✓ Active':'○ Not implemented'} · Tier: ${activeCtrls[c.dataIndex].tier}`,
+      }}},
+      scales:{
+        x:{grid:{color:'rgba(30,41,59,.8)'},ticks:{color:'#94a3b8',font:{size:10},callback:v=>v+'%'},max:40},
+        y:{grid:{display:false},ticks:{color:'#94a3b8',font:{size:10}}},
+      }
+    }
+  });
+
+  // Table with checkboxes
+  const tierCls = {'Must-Have':'t-must','High':'t-high','Medium':'t-med','Low':'t-low'};
+  const barGrad = {'Must-Have':'linear-gradient(90deg,#3b82f6,#22d3ee)','High':'linear-gradient(90deg,#fbbf24,#f59e0b)','Medium':'linear-gradient(90deg,#64748b,#475569)'};
+  document.getElementById('ctrlTable').innerHTML = activeCtrls.map((c,i) => `
+    <div class="ctrl-row">
+      <span class="ctrl-num">${i+1}</span>
+      <input type="checkbox" class="ctrl-chk" ${c.checked?'checked':''} onchange="toggleCtrl('${c.name.replace(/'/g,"\\'")}')">
+      <div class="ctrl-n ${c.checked?'active':''}">${c.name}</div>
+      <div class="ctrl-bw"><div class="ctrl-bf" style="width:${(c.pct/40*100).toFixed(0)}%;background:${c.checked?(barGrad[c.tier]||'linear-gradient(90deg,#64748b,#475569)'):'#1e293b'};opacity:${c.checked?1:0.4};"></div></div>
+      <div class="ctrl-pct" style="color:${c.checked?'var(--cyan)':'var(--txt3)'};">${c.pct}%</div>
+      <div class="tier ${tierCls[c.tier]||'t-low'}">${c.tier}</div>
+    </div>`).join('');
+}
+
+// ── Render KPIs (dynamic dots) ────────────────────────────────────────────
+function renderKPIs(statuses) {
+  document.getElementById('kpiGrid').innerHTML = KPI.map(layer => `
+    <div class="kc">
+      <div class="kh ${layer.cls}">${layer.ico} ${layer.label}</div>
+      <div class="ki-wrap">
+        ${layer.items.map(k => `
+          <div class="ki">
+            <div class="ki-n"><span class="dot ${statuses[k.k]||'s-a'}"></span>${k.n}</div>
+            <div class="ki-row"><div class="ki-t">${k.t}</div><div class="ki-d">${k.d}</div></div>
+          </div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+// ── Segment switch ────────────────────────────────────────────────────────
+function selectSeg(el) {
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  activeSeg = el.dataset.seg;
+  const s = SEG[activeSeg];
+  const b = document.getElementById('segBadge');
+  b.textContent    = s.name;
+  b.style.color    = s.color;
+  b.style.borderColor = s.color+'55';
+  b.style.background  = s.color+'1a';
+  initControls(activeSeg);
+  recalc();
+}
+
+// ── Main recalc ───────────────────────────────────────────────────────────
+function recalc() {
+  const r = calc();
+  renderMetrics(r);
+  renderRoiBreakdown(r);
+  renderCharts(r);
+  renderControls(r);
+  renderKPIs(computeStatuses(r));
+  document.getElementById('calcTime').textContent = 'Updated '+new Date().toLocaleTimeString();
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+initControls('payments');
+recalc();
+</script>
+</body>
+</html>
